@@ -40,6 +40,7 @@ def run():
     SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT), 0, 32)
     FPSclock = pygame.time.Clock()
     
+    # 游戏循环
     while True:
         sprites_start = startmenu()
         message_over = maingame(sprites_start)
@@ -103,7 +104,7 @@ def maingame(sprites_start):
     pipeexample = pygame.image.load(PIPE_LIST[pipecolor]).convert_alpha()
     pipeexample_inv = pygame.transform.flip(pipeexample, 0, 1)
     pipe_width, pipe_height = pipeexample.get_size()
-
+    
     pipes['up'] = (
         sprites.Pipe(Vec2d(2*SCREENWIDTH, pipepositionys[0]), pipeexample_inv.copy()),
         sprites.Pipe(Vec2d(2*SCREENWIDTH+PIPESLOT, pipepositionys[1]), pipeexample_inv.copy()),
@@ -123,7 +124,6 @@ def maingame(sprites_start):
     # 小鸟控制器
     birdcontroller = controllers.BirdController(bird)
     birdcontroller.flap()   # 振翅
-    # FPSclock.tick()
     
     # 主循环
     while True:
@@ -199,6 +199,7 @@ def gameover(sprites_end):
     bird = birdcontroller.bird
     
     FPSclock.tick()
+    
     # 游戏结束动画
     while True:
         passed_time = FPSclock.tick(FPS)
@@ -226,6 +227,7 @@ def gameover(sprites_end):
                 return None
 
 def crashdetect(bird, pipelist):
+    '''游戏中对小鸟与管道的碰撞检测'''
     for pipe in pipelist:
         if controllers.crashdetect_mask(
             bird.rect, bird.mask, pipe.rect, pipe.mask

@@ -15,4 +15,4 @@ PIPESLOT = 180  # 管道间隔(px)
 PIPESLOT = max(PIPESLOT, (SCREENWIDTH+60)//2)
 SLOT = 100      # 上下管道间隙
 PP_MIN = -250
-PP_MAX = -120   # 管道随机位置(pipe position)
+PP_MAX = -120   # 管道随机位置上下限(pipe position)

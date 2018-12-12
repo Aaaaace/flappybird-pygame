@@ -25,7 +25,7 @@ def gethitmask(surface):
 
 def crashdetect_mask(rect1, hitmask1, rect2, hitmask2):
     '''
-    碰撞检测，碰撞返回True
+    使用hitmask的碰撞检测，碰撞返回True
     '''
     overlap_area = rect1.clip(rect2)
     if overlap_area.width == 0 or overlap_area.height == 0:
