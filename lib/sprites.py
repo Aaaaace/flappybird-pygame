@@ -32,6 +32,9 @@ PIPE_LIST = (
     'assets\\sprites\\pipe-red.png',
 )
 BASE = 'assets\\sprites\\base.png'
+NUMBER_LIST = [
+    'assets\\sprites\\%s.png' % i for i in range(10)
+]
 
 class Bird(pygame.sprite.Sprite):
     '''
@@ -50,8 +53,7 @@ class Bird(pygame.sprite.Sprite):
             pygame.image.load(file).convert_alpha() for file in BIRD_LIST[color]
         ]
         self.image = self.images[self.imageidx]     # 显示的surface
-        self.width = self.image.get_width()
-        self.height = self.image.get_height()
+        self.width, self.height = self.image.get_size()
         self.rect = Rect(position, (self.width, self.height))
         self.passed_time = 0                        # 过去的时间(ms)
     
@@ -111,3 +113,41 @@ class Base(pygame.sprite.Sprite):
     def update(self, passed_time):
         basexmovement = round(passed_time/1000*self.speed)
         self.position[0] = -((-self.position[0] + basexmovement) % self.baseshift)
+    
+class ScoreFigure(pygame.sprite.Sprite):
+    '''分数'''
+    def __init__(self):
+        super().__init__()
+        self.score = 0
+        self.figures = [
+            pygame.image.load(NUMBER_LIST[i]).convert_alpha() \
+                for i in range(10)
+        ]
+        self.image = self.figures[0]
+        self.width, self.height = self.image.get_size()
+        self.rect = Rect(
+            (constants.SCREENWIDTH-self.width)//2,
+            int(0.15*constants.SCREENHEIGHT), self.width, self.height
+        )
+    
+    def update(self, score):
+        if score <= self.score:
+            return
+        self.score = score
+        figures = []
+        while score > 0:
+            figures.append(score%10)
+            score = score//10
+        self.image = pygame.surface.Surface(
+            (self.width*len(figures),self.height), 0, 32
+        )
+        self.image.fill((0,0,255))
+        self.image.set_colorkey((0,0,255))
+        
+        width, height = self.image.get_size()
+        self.rect.x = (constants.SCREENWIDTH - width)//2
+        
+        for idx, figure in enumerate(figures):
+            figurex = width - (idx+1)*self.width
+            figurex += (self.width - self.figures[figure].get_width())//2
+            self.image.blit(self.figures[figure], (figurex,0))

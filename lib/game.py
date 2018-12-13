@@ -25,6 +25,7 @@ BACKGROUND_LIST = [
     'assets\\sprites\\background-night.png',
 ]
 STARTMESSAGE = 'assets\\sprites\\message.png'
+GAMEOVERMESSAGE = 'assets\\sprites\\gameover.png'
 
 SCREEN = None       # 窗口
 FPSclock = None     # 总时钟
@@ -96,6 +97,7 @@ def maingame(sprites_start):
     '''
     score = 0
     maygetscore = False
+    scorefigure = sprites.ScoreFigure()
     # 管道
     pipes = {}
     pipecolor = random.randint(0, 1)
@@ -146,6 +148,7 @@ def maingame(sprites_start):
         up_y2 = pipes['up'][1].update(passed_time)
         pipes['down'][0].update(passed_time, up_y1)
         pipes['down'][1].update(passed_time, up_y2)
+        scorefigure.update(score)
         
         if maygetscore and \
             (bird.rect.x > pipes['up'][0].rect.x \
@@ -167,7 +170,7 @@ def maingame(sprites_start):
                 'pipes': pipes,
                 'base': base,
                 'background': background,
-                'score': score
+                'scorefigure': scorefigure, 
             }
         # 绘制
         SCREEN.blit(background, (0, 0))
@@ -179,6 +182,7 @@ def maingame(sprites_start):
                 (pipes['down'][1].image, pipes['down'][1].rect),
         ))
         SCREEN.blit(base.image, base.position)
+        SCREEN.blit(scorefigure.image, scorefigure.rect)
         SCREEN.blit(bird.image, bird.rect)
         pygame.display.update()
 
@@ -186,17 +190,25 @@ def gameover(sprites_end):
     '''
     结束动画和结束信息
     '''
-    print(sprites_end['score'])
+    if sprites_end is None:
+        return None
     
     base = sprites_end['base']
     background = sprites_end['background']
     pipes = sprites_end['pipes']
     birdcontroller = sprites_end['birdcontroller']
+    scorefigure = sprites_end['scorefigure']
+    
     birdcontroller.bird_angle = 30
     birdcontroller.bird_speedy = 100
     birdcontroller._gravityspeedyacc *= 1.5
     birdcontroller._gravityangleacc *= 4
     bird = birdcontroller.bird
+    gameovermessage = pygame.image.load(GAMEOVERMESSAGE).convert_alpha()
+    gameoverwidth, gameoverheight = gameovermessage.get_size()
+    SCREEN.blit(gameovermessage,
+        ((SCREENWIDTH-gameoverwidth)//2, int(0.33*SCREENHEIGHT)))
+    pygame.display.update()
     
     FPSclock.tick()
     
@@ -213,9 +225,13 @@ def gameover(sprites_end):
                 (pipes['down'][0].image, pipes['down'][0].rect),
                 (pipes['up'][1].image, pipes['up'][1].rect),
                 (pipes['down'][1].image, pipes['down'][1].rect),
+                (base.image, base.position),
+                (scorefigure.image, scorefigure.rect),
         ))
-        SCREEN.blit(base.image, base.position)
+        # SCREEN.blit(base.image, base.position)
         SCREEN.blit(bird.image, bird.rect)
+        SCREEN.blit(gameovermessage,
+            ((SCREENWIDTH-gameoverwidth)//2, int(0.35*SCREENHEIGHT)))
         pygame.display.update()
         
     while True:

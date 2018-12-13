@@ -82,8 +82,8 @@ class BirdController(object):
         # 速度和位置
         self.bird_speedy += passed_time/1000 * self._gravityspeedyacc
         self.bird.rect[1] += int(passed_time/1000 * self.bird_speedy)
-        if self.bird.rect[1] < 0:
-            self.bird.rect[1] = 0
+        if self.bird.rect[1] < -self.bird.width:
+            self.bird.rect[1] = -self.bird.width
         self.bird.image = \
             pygame.transform.rotate(self.bird.image, self.bird_angle)
         # 碰撞蒙版
