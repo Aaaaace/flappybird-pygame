@@ -51,11 +51,14 @@ def startmenu():
     '''
     创建背景、小鸟、地面，再传递到maingame中
     '''
+    passed_time_accumulate = 0
+    
     backgroundsrc = random.randint(0, 1)
     birdcolor = random.randint(0, 2)
     
     # 小鸟
-    bird = sprites.Bird(Vec2d([50, 240]), birdcolor)
+    bird = sprites.Bird(Vec2d([BIRDX, BIRDY]), birdcolor)
+    birdswingderection = True  # 开始界面中小鸟上下摆动的方向，True表示上
     # 地面
     base = sprites.Base()
     # 背景和开始信息
@@ -81,7 +84,9 @@ def startmenu():
                     }
         
         passed_time = FPSclock.tick(FPS)
+        passed_time_accumulate += passed_time
         bird.update(passed_time)
+        birdswingderection = birdswing(bird, passed_time, birdswingderection)
         base.update(passed_time)
         
         SCREEN.blit(background, (0, 0))
@@ -141,6 +146,7 @@ def maingame(sprites_start):
                 birdcontroller.flap()  # 振翅
         
         passed_time = FPSclock.tick(FPS)
+        print(passed_time)
         # 更新小鸟、管道、地面
         birdcontroller.update(passed_time)
         base.update(passed_time)
@@ -242,6 +248,23 @@ def gameover(sprites_end):
             if event.type in (KEYDOWN, MOUSEBUTTONDOWN):
                 return None
 
+def birdswing(bird, passed_time, swingderection):
+    '''小鸟在游戏开始前上下摆动'''
+    movementy = passed_time//120
+    if swingderection:
+        bird.rect.y -= movementy
+        if bird.rect.y < BIRDY - SWINGSCOPE:
+            bird.rect.y = 2*(BIRDY - SWINGSCOPE) - bird.rect.y
+            return not swingderection
+        return swingderection
+    else:
+        bird.rect.y += movementy
+        print('go down')
+        if bird.rect.y > BIRDY + SWINGSCOPE:
+            bird.rect.y = 2*(BIRDY + SWINGSCOPE) - bird.rect.y
+            return not swingderection
+        return swingderection
+    
 def crashdetect(bird, pipelist):
     '''游戏中对小鸟与管道的碰撞检测'''
     for pipe in pipelist:

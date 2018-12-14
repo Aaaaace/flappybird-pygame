@@ -70,6 +70,7 @@ class BirdController(object):
             pygame.transform.rotate(self.bird.image, angle*5).get_size() \
                 for angle in range(-18, 7)
         ]
+        self.passed_time = 0
         
     def flap(self):
         self.bird_angle = self._flapangleacc
@@ -78,15 +79,19 @@ class BirdController(object):
     def update(self, passed_time):
         '''更新速度、方向，并更新当前帧、位置'''
         self.bird.update(passed_time)
+        
+        self.passed_time += passed_time
         # 方向
         self.bird_angle += passed_time/1000 * self._gravityangleacc
         if self.bird_angle <= -90:
             self.bird_angle = -90
         # 速度和位置
         self.bird_speedy += passed_time/1000 * self._gravityspeedyacc
-        self.bird.rect[1] += int(passed_time/1000 * self.bird_speedy)
-        if self.bird.rect[1] < -self.bird.width:
-            self.bird.rect[1] = -self.bird.width
+        movementy = self.passed_time*self.bird_speedy//1000
+        self.bird.rect.y += movementy
+        self.passed_time -= movementy*1000/self.bird_speedy
+        if self.bird.rect.y < -self.bird.width:
+            self.bird.rect.y = -self.bird.width
         self.bird.image = \
             pygame.transform.rotate(self.bird.image, self.bird_angle)
         # 碰撞蒙版

@@ -63,8 +63,7 @@ class Bird(pygame.sprite.Sprite):
         for _ in range(self.passed_frame):
             self.imageidx = next(self._loop)
         self.image = self.images[self.imageidx]
-        if self.passed_time > self._duration:
-            self.passed_time %= self._duration
+        self.passed_time -= self._duration * self.passed_frame
 
 class Pipe(pygame.sprite.Sprite):
     '''
@@ -82,12 +81,15 @@ class Pipe(pygame.sprite.Sprite):
         self.width = self.image.get_width()
         self.height = self.image.get_height()
         self.rect = Rect(position, (self.width, self.height))
+        self.passed_time = 0
         
     def update(self, passed_time, up_y=None):
         '''
         <summary>更新管道位置</summary>
         '''
-        move_distance = round(passed_time/1000*self.speed)
+        self.passed_time += passed_time
+        move_distance = self.passed_time*self.speed//1000
+        self.passed_time -= move_distance*1000/self.speed
         self.rect[0] -= move_distance
         if self.rect[0] < -self.width:
             y = up_y or random.randint(constants.PP_MIN, constants.PP_MAX)
@@ -109,11 +111,14 @@ class Base(pygame.sprite.Sprite):
         self.height = self.image.get_height()
         self.position = Vec2d(0, constants.SCREENHEIGHT - self.height)
         self.baseshift = self.width - constants.SCREENWIDTH  # 用于重置地面位置
-    
+        self.passed_time = 0
+        
     def update(self, passed_time):
-        basexmovement = round(passed_time/1000*self.speed)
+        self.passed_time += passed_time
+        basexmovement = self.passed_time*self.speed//1000
+        self.passed_time -= basexmovement*1000/self.speed
         self.position[0] = -((-self.position[0] + basexmovement) % self.baseshift)
-    
+        
 class ScoreFigure(pygame.sprite.Sprite):
     '''<summary>分数板</summary>'''
     def __init__(self):
