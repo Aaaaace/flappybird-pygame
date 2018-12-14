@@ -38,7 +38,7 @@ NUMBER_LIST = [
 
 class Bird(pygame.sprite.Sprite):
     '''
-    玩家控制的小鸟(通用)
+    <summary>玩家控制的小鸟，只用于更新小鸟的动画(结构通用)</summary>
     '''
     _FPS = 5                            # sprite动画FPS
     _duration = 1000//_FPS              # 每一帧持续的时间(ms)
@@ -68,13 +68,13 @@ class Bird(pygame.sprite.Sprite):
 
 class Pipe(pygame.sprite.Sprite):
     '''
-    管道
+    <summary>管道</summary>
     '''
     _sloty = constants.SLOT
     _slotx = constants.PIPESLOT
     def __init__(self, position, image):
         '''
-        <param name="position">管道对初始位置</param>
+        <param name="position">管道的初始坐标</param>
         '''
         super().__init__()
         self.speed = constants.SPEED
@@ -85,7 +85,7 @@ class Pipe(pygame.sprite.Sprite):
         
     def update(self, passed_time, up_y=None):
         '''
-        更新管道位置
+        <summary>更新管道位置</summary>
         '''
         move_distance = round(passed_time/1000*self.speed)
         self.rect[0] -= move_distance
@@ -115,7 +115,7 @@ class Base(pygame.sprite.Sprite):
         self.position[0] = -((-self.position[0] + basexmovement) % self.baseshift)
     
 class ScoreFigure(pygame.sprite.Sprite):
-    '''分数'''
+    '''<summary>分数板</summary>'''
     def __init__(self):
         super().__init__()
         self.score = 0

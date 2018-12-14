@@ -25,7 +25,11 @@ def gethitmask(surface):
 
 def crashdetect_mask(rect1, hitmask1, rect2, hitmask2):
     '''
-    使用hitmask的碰撞检测，碰撞返回True
+    <summary>使用hitmask的碰撞检测，若碰撞则返回True</summary>
+    <param name="rect1">第一个sprite的rect(左上角坐标、宽高)</param>
+    <param name="hitmask1">第一个sprite的hitmask</param>
+    <param name="rect2">第二个sprite的rect</param>
+    <param name="hitmask2">第二个sprite的hitmask</param>
     '''
     overlap_area = rect1.clip(rect2)
     if overlap_area.width == 0 or overlap_area.height == 0:
@@ -42,8 +46,7 @@ def crashdetect_mask(rect1, hitmask1, rect2, hitmask2):
     
 class BirdController(object):
     '''
-    小鸟控制器
-    控制小鸟的速度、角度、加速度、振翅动作
+    <sunmmary>小鸟控制器，控制小鸟的速度、角度、加速度、振翅动作</sunmmary>
     '''
     _flapspeedyacc = -300       # y方向振翅后速度(px/s)
     _initspeedy = -100          # y方向速度(px/s)
