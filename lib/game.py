@@ -29,7 +29,8 @@ GAMEOVERMESSAGE = 'assets\\sprites\\gameover.png'
 
 SCREEN = None       # 窗口
 FPSclock = None     # 总时钟
-
+# 函数使用的全局变量
+swing_passed_time = 0
 
 def run():
     
@@ -51,7 +52,6 @@ def startmenu():
     '''
     创建背景、小鸟、地面，再传递到maingame中
     '''
-    passed_time_accumulate = 0
     
     backgroundsrc = random.randint(0, 1)
     birdcolor = random.randint(0, 2)
@@ -84,7 +84,6 @@ def startmenu():
                     }
         
         passed_time = FPSclock.tick(FPS)
-        passed_time_accumulate += passed_time
         bird.update(passed_time)
         birdswingderection = birdswing(bird, passed_time, birdswingderection)
         base.update(passed_time)
@@ -250,7 +249,10 @@ def gameover(sprites_end):
 
 def birdswing(bird, passed_time, swingderection):
     '''小鸟在游戏开始前上下摆动'''
-    movementy = passed_time//120
+    global swing_passed_time
+    swing_passed_time += passed_time
+    movementy = swing_passed_time//20
+    swing_passed_time -= movementy*20
     if swingderection:
         bird.rect.y -= movementy
         if bird.rect.y < BIRDY - SWINGSCOPE:
@@ -259,7 +261,6 @@ def birdswing(bird, passed_time, swingderection):
         return swingderection
     else:
         bird.rect.y += movementy
-        print('go down')
         if bird.rect.y > BIRDY + SWINGSCOPE:
             bird.rect.y = 2*(BIRDY + SWINGSCOPE) - bird.rect.y
             return not swingderection

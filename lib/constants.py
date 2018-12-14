@@ -5,13 +5,13 @@
 # 界面设置
 SCREENWIDTH  = 288
 SCREENHEIGHT = 512
-FPS = 600
+FPS = 60
 DURATION = 1000//FPS
 
 # 开始界面设置
 BIRDX = 50
-BIRDY = 240
-SWINGSCOPE = 40
+BIRDY = 250
+SWINGSCOPE = 20
 
 # 游戏设置
 SPEED = 125     # 前进速度(px/s)
