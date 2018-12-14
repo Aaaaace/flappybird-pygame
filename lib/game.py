@@ -145,7 +145,7 @@ def maingame(sprites_start):
                 birdcontroller.flap()  # 振翅
         
         passed_time = FPSclock.tick(FPS)
-        print(passed_time)
+        # print(passed_time)
         # 更新小鸟、管道、地面
         birdcontroller.update(passed_time)
         base.update(passed_time)
