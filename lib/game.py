@@ -12,20 +12,10 @@ import controllers
 from gameobjects import Vec2d
 import random
 from constants import *
+from asserts import PIPE_LIST, BACKGROUND_LIST, STARTMESSAGE, GAMEOVERMESSAGE
+from asserts import SOUND_HIT, SOUND_DIE
 # from itertools import cycle
 
-
-# 图片资源
-PIPE_LIST = (
-    'assets\\sprites\\pipe-green.png',
-    'assets\\sprites\\pipe-red.png',
-)
-BACKGROUND_LIST = [
-    'assets\\sprites\\background-day.png',
-    'assets\\sprites\\background-night.png',
-]
-STARTMESSAGE = 'assets\\sprites\\message.png'
-GAMEOVERMESSAGE = 'assets\\sprites\\gameover.png'
 
 SCREEN = None       # 窗口
 FPSclock = None     # 总时钟
@@ -44,26 +34,40 @@ def run():
     
     # 游戏循环
     while True:
-        sprites_start = startmenu()
+        sprites_start = startMenu()
         message_over = maingame(sprites_start)
         gameover(message_over)
 
-def startmenu():
+def startMenu():
     '''
     创建背景、小鸟、地面，再传递到maingame中
     '''
-    
-    backgroundsrc = random.randint(0, 1)
-    birdcolor = random.randint(0, 2)
+    def birdswing(bird, passed_time, swingderection):
+        '''小鸟在游戏开始前上下摆动'''
+        global swing_passed_time
+        swing_passed_time += passed_time
+        movementy = swing_passed_time//20
+        swing_passed_time -= movementy*20
+        if swingderection:
+            bird.rect.y -= movementy
+            if bird.rect.y < BIRDY - SWINGSCOPE:
+                bird.rect.y = 2*(BIRDY - SWINGSCOPE) - bird.rect.y
+                return not swingderection
+            return swingderection
+        else:
+            bird.rect.y += movementy
+            if bird.rect.y > BIRDY + SWINGSCOPE:
+                bird.rect.y = 2*(BIRDY + SWINGSCOPE) - bird.rect.y
+                return not swingderection
+            return swingderection
     
     # 小鸟
-    bird = sprites.Bird(Vec2d([BIRDX, BIRDY]), birdcolor)
-    birdswingderection = True  # 开始界面中小鸟上下摆动的方向，True表示上
+    bird = sprites.Bird(Vec2d([BIRDX, BIRDY]), random.randint(0, 2))
+    birdswingdirection = True  # 开始界面中小鸟上下摆动的方向，True表示上
     # 地面
     base = sprites.Base()
     # 背景和开始信息
-    backgroundsrc = random.randint(0, 1)
-    background = pygame.image.load(BACKGROUND_LIST[backgroundsrc]).convert()
+    background = pygame.image.load(random.choice(BACKGROUND_LIST)).convert()
     startmessage = pygame.image.load(STARTMESSAGE).convert_alpha()
     message_position = Vec2d(
         (SCREENWIDTH-startmessage.get_width())//2,
@@ -85,7 +89,7 @@ def startmenu():
         
         passed_time = FPSclock.tick(FPS)
         bird.update(passed_time)
-        birdswingderection = birdswing(bird, passed_time, birdswingderection)
+        birdswingdirection = birdswing(bird, passed_time, birdswingdirection)
         base.update(passed_time)
         
         SCREEN.blit(background, (0, 0))
@@ -97,7 +101,7 @@ def startmenu():
 
 def maingame(sprites_start):
     '''
-    游戏内容
+    游戏开始后的内容
     '''
     score = 0
     maygetscore = False
@@ -111,19 +115,19 @@ def maingame(sprites_start):
     pipeexample_inv = pygame.transform.flip(pipeexample, 0, 1)
     pipe_width, pipe_height = pipeexample.get_size()
     
-    pipes['up'] = (
+    pipes['top'] = (
         sprites.Pipe(Vec2d(2*SCREENWIDTH, pipepositionys[0]), pipeexample_inv.copy()),
         sprites.Pipe(Vec2d(2*SCREENWIDTH+PIPESLOT, pipepositionys[1]), pipeexample_inv.copy()),
     )
-    pipes['down'] = (
+    pipes['bottom'] = (
         sprites.Pipe(Vec2d(2*SCREENWIDTH, pipepositionys[0]+pipe_height+SLOT), pipeexample.copy()),
         sprites.Pipe(Vec2d(2*SCREENWIDTH+PIPESLOT, pipepositionys[1]+pipe_height+SLOT), pipeexample.copy()),
     )
     for idx in range(2):
-        pipes['up'][idx].mask = controllers.gethitmask(pipes['up'][idx].image)
-        pipes['down'][idx].mask = controllers.gethitmask(pipes['down'][idx].image)
+        pipes['top'][idx].mask = controllers.gethitmask(pipes['top'][idx].image)
+        pipes['bottom'][idx].mask = controllers.gethitmask(pipes['bottom'][idx].image)
     
-    # 从startmenu获取的sprites
+    # 从startMenu获取的sprites
     bird = sprites_start['bird']
     background = sprites_start['background']
     base = sprites_start['base']
@@ -145,31 +149,31 @@ def maingame(sprites_start):
                 birdcontroller.flap()  # 振翅
         
         passed_time = FPSclock.tick(FPS)
-        # print(passed_time)
-        # 更新小鸟、管道、地面
+        # 更新小鸟、地面、管道
         birdcontroller.update(passed_time)
         base.update(passed_time)
-        up_y1 = pipes['up'][0].update(passed_time)
-        up_y2 = pipes['up'][1].update(passed_time)
-        pipes['down'][0].update(passed_time, up_y1)
-        pipes['down'][1].update(passed_time, up_y2)
+        up_y1 = pipes['top'][0].update(passed_time)
+        up_y2 = pipes['top'][1].update(passed_time)
+        pipes['bottom'][0].update(passed_time, up_y1)
+        pipes['bottom'][1].update(passed_time, up_y2)
         scorefigure.update(score)
         
         if maygetscore and \
-            (bird.rect.x > pipes['up'][0].rect.x \
-            or bird.rect.x > pipes['up'][1].rect.x):
+            (bird.rect.x > pipes['top'][0].rect.x \
+            or bird.rect.x > pipes['top'][1].rect.x):
             score += 1
             maygetscore = False
             
-        if bird.rect.x < pipes['up'][0].rect.x \
-            and bird.rect.x < pipes['up'][1].rect.x:
+        if bird.rect.x < pipes['top'][0].rect.x \
+            and bird.rect.x < pipes['top'][1].rect.x:
             maygetscore = True
         
         # 碰撞检测
         if bird.rect[1] + bird.image.get_width()/1.5 > base.position[1] or \
             crashdetect(bird,(
-                    pipes['up'][0], pipes['up'][1],
-                    pipes['down'][0], pipes['down'][1],)):
+                    pipes['top'][0], pipes['top'][1],
+                    pipes['bottom'][0], pipes['bottom'][1],)):
+            pygame.mixer.Sound(SOUND_HIT[0]).play()
             return{
                 'birdcontroller': birdcontroller,
                 'pipes': pipes,
@@ -179,12 +183,11 @@ def maingame(sprites_start):
             }
         # 绘制
         SCREEN.blit(background, (0, 0))
-        
         SCREEN.blits((
-                (pipes['up'][0].image, pipes['up'][0].rect),
-                (pipes['down'][0].image, pipes['down'][0].rect),
-                (pipes['up'][1].image, pipes['up'][1].rect),
-                (pipes['down'][1].image, pipes['down'][1].rect),
+                (pipes['top'][0].image, pipes['top'][0].rect),
+                (pipes['bottom'][0].image, pipes['bottom'][0].rect),
+                (pipes['top'][1].image, pipes['top'][1].rect),
+                (pipes['bottom'][1].image, pipes['bottom'][1].rect),
         ))
         SCREEN.blit(base.image, base.position)
         SCREEN.blit(scorefigure.image, scorefigure.rect)
@@ -197,7 +200,7 @@ def gameover(sprites_end):
     '''
     if sprites_end is None:
         return None
-    
+    pygame.mixer.Sound(SOUND_DIE[0]).play()
     base = sprites_end['base']
     background = sprites_end['background']
     pipes = sprites_end['pipes']
@@ -226,10 +229,10 @@ def gameover(sprites_end):
         
         SCREEN.blit(background, (0, 0))
         SCREEN.blits((
-                (pipes['up'][0].image, pipes['up'][0].rect),
-                (pipes['down'][0].image, pipes['down'][0].rect),
-                (pipes['up'][1].image, pipes['up'][1].rect),
-                (pipes['down'][1].image, pipes['down'][1].rect),
+                (pipes['top'][0].image, pipes['top'][0].rect),
+                (pipes['bottom'][0].image, pipes['bottom'][0].rect),
+                (pipes['top'][1].image, pipes['top'][1].rect),
+                (pipes['bottom'][1].image, pipes['bottom'][1].rect),
                 (base.image, base.position),
                 (scorefigure.image, scorefigure.rect),
         ))
@@ -246,25 +249,6 @@ def gameover(sprites_end):
                 sys.exit()
             if event.type in (KEYDOWN, MOUSEBUTTONDOWN):
                 return None
-
-def birdswing(bird, passed_time, swingderection):
-    '''小鸟在游戏开始前上下摆动'''
-    global swing_passed_time
-    swing_passed_time += passed_time
-    movementy = swing_passed_time//20
-    swing_passed_time -= movementy*20
-    if swingderection:
-        bird.rect.y -= movementy
-        if bird.rect.y < BIRDY - SWINGSCOPE:
-            bird.rect.y = 2*(BIRDY - SWINGSCOPE) - bird.rect.y
-            return not swingderection
-        return swingderection
-    else:
-        bird.rect.y += movementy
-        if bird.rect.y > BIRDY + SWINGSCOPE:
-            bird.rect.y = 2*(BIRDY + SWINGSCOPE) - bird.rect.y
-            return not swingderection
-        return swingderection
     
 def crashdetect(bird, pipelist):
     '''游戏中对小鸟与管道的碰撞检测'''
@@ -279,6 +263,5 @@ def crashdetect(bird, pipelist):
 if __name__ == '__main__':
     MAIN_DIR = os.path.split(os.path.abspath(sys.argv[0]))[0]
     os.chdir(MAIN_DIR)
-    # print(MAIN_DIR)
     os.chdir('..')  # 调用assets内数据需要到该文件夹
     run()

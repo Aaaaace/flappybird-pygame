@@ -9,32 +9,8 @@ from itertools import cycle
 from gameobjects import Vec2d
 import random
 
+from asserts import BIRD_LIST, PIPE_LIST, BASE, NUMBER_LIST     # 图片资源
 
-
-# 图片资源
-BIRD_LIST = (
-    [
-        'assets\\sprites\\bluebird-downflap.png',
-        'assets\\sprites\\bluebird-midflap.png',
-        'assets\\sprites\\bluebird-upflap.png',
-    ],[
-        'assets\\sprites\\redbird-downflap.png',
-        'assets\\sprites\\redbird-midflap.png',
-        'assets\\sprites\\redbird-upflap.png',
-    ],[
-        'assets\\sprites\\yellowbird-downflap.png',
-        'assets\\sprites\\yellowbird-midflap.png',
-        'assets\\sprites\\yellowbird-upflap.png',
-    ],
-)
-PIPE_LIST = (
-    'assets\\sprites\\pipe-green.png',
-    'assets\\sprites\\pipe-red.png',
-)
-BASE = 'assets\\sprites\\base.png'
-NUMBER_LIST = [
-    'assets\\sprites\\%s.png' % i for i in range(10)
-]
 
 class Bird(pygame.sprite.Sprite):
     '''
@@ -58,6 +34,9 @@ class Bird(pygame.sprite.Sprite):
         self.passed_time = 0                        # 过去的时间(ms)
     
     def update(self, passed_time):
+        '''
+        更新小鸟动画帧
+        '''
         self.passed_time += passed_time
         self.passed_frame = self.passed_time // self._duration
         for _ in range(self.passed_frame):

@@ -3,9 +3,11 @@
 用于控制sprite的状态、动作、方向、速度、碰撞等属性
 '''
 
+import os
 import pygame
 from pygame.locals import *
 import sprites
+from asserts import SOUND_FLAP
 
 
 
@@ -59,8 +61,8 @@ class BirdController(object):
         super().__init__()
         self.passed_time = 0    # 过去的时间(ms)
         self.bird = bird
-        self.bird_angle = self._initangle
-        self.bird_speedy = self._initspeedy
+        self.bird_angle = self._initangle   # 初始角度
+        self.bird_speedy = self._initspeedy # 初始速度
         self.bird.masks = [
             gethitmask(pygame.transform.rotate(self.bird.image, angle*5)) \
                 for angle in range(-18, 7)
@@ -70,18 +72,20 @@ class BirdController(object):
             pygame.transform.rotate(self.bird.image, angle*5).get_size() \
                 for angle in range(-18, 7)
         ]
-        self.passed_time = 0
+        # 音效
+        self.sound_flap = pygame.mixer.Sound(SOUND_FLAP[int(os.name != 'nt')])
         
     def flap(self):
+        self.sound_flap.play()
         self.bird_angle = self._flapangleacc
-        self.bird_speedy = self._flapspeedyacc
+        self.bird_speedy = self._flapspeedyacc   
     
     def update(self, passed_time):
         '''更新速度、方向，并更新当前帧、位置'''
         self.bird.update(passed_time)
         
         self.passed_time += passed_time
-        # 方向
+        # 方向（角度）
         self.bird_angle += passed_time/1000 * self._gravityangleacc
         if self.bird_angle <= -90:
             self.bird_angle = -90
